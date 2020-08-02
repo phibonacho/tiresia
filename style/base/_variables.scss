@@ -1,0 +1,29 @@
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/mixins";
+
+$black: #231f20;
+$lime: #c4d600;
+$green: #2f9a41;
+$teal: #2db49c;
+$blue : #3452a0;
+$yellow: #f6ae2d;
+$sandy-brown: #FC9E4F;
+$red : #d00000;
+$red-RYB : #F4442E;
+$theme-colors : (
+        "danger" : $red-RYB,
+        "warning" : $lime,
+        "success" : $green, // caribbean green
+        "primary" : $blue,
+        "secondary" : $sandy-brown, // eagle green
+);
+
+$primary : $blue;
+$secondary: $sandy-brown;
+$bar-width:             20rem;
+$border-radius:         .3rem;
+$border-radius-lg:      .3rem;
+$modal-backdrop-bg:     $primary;
+$modal-backdrop-opacity:.7;
+
+@import "~bootstrap/scss/variables";
