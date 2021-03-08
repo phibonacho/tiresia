@@ -2,6 +2,7 @@
   <div id="app" class="bg-dark">
     <h1 class='main-title'>tiresia</h1>
     <RandomPicker/>
+    <h1 class="main-title" style="font-size: 152px; text-shadow: #ec058e 5px 4px">t</h1>
   </div>
 </template>
 
