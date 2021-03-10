@@ -157,6 +157,12 @@ export default {
     position: fixed;
     top: 0;
     left: 0;
+    z-index: 1050;
+
+    @include media-breakpoint-up(md) {
+      left: 50%;
+      transform: translateX(-50%);
+    }
   }
   .input-container {
     @at-root.sticky#{&} {
