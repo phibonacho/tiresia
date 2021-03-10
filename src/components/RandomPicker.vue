@@ -88,15 +88,15 @@ export default {
       }
 
       const actualMax = parseInt(this.max) + 1
-      if (this.picked.length === (actualMax - this.min)) {
-        this.limitReached = true
-        return
-      }
       let random
       do {
         random = Math.floor((Math.random() * (actualMax - this.min))) + parseInt(this.min)
       } while (this.picked.includes(random))
       this.picked.push(random)
+
+      if (this.picked.length === (actualMax - this.min)) {
+        this.limitReached = true
+      }
     }
   }
 }
@@ -203,6 +203,7 @@ export default {
       }
 
       .custom-field {
+        position: relative;
         display: flex;
         flex-direction: row-reverse;
         padding: 1rem 2rem;
@@ -215,25 +216,6 @@ export default {
           padding: 1.5rem .5rem .5rem 1rem;
           position: relative;
         }
-
-        label {
-          flex: 2 1 35%;
-          max-width: 35%;
-          color: lighten($dark, 50);
-          font-size: 1.2rem;
-          padding-top: .1rem;
-          text-align: right;
-          transition: all .1s linear;
-          @at-root.sticky#{&} {
-            position: absolute;
-            flex: unset;
-            max-width: unset;
-            left: 1rem;
-            top: 1.5rem;
-            font-size: 1rem;
-          }
-        }
-
         input {
           flex: 3 1 65%;
           max-width: 65%;
@@ -262,6 +244,25 @@ export default {
         input[type=number]::-webkit-outer-spin-button {
           -webkit-appearance: none;
           margin: 0;
+        }
+
+        label {
+          flex: 2 1 35%;
+          max-width: 35%;
+          color: lighten($dark, 50);
+          font-size: 1.2rem;
+          padding-top: .1rem;
+          text-align: left;
+
+          transition: all .1s linear;
+          @at-root.sticky#{&} {
+            position: absolute;
+            flex: unset;
+            max-width: unset;
+            left: 1rem;
+            top: 1.5rem;
+            font-size: 1rem;
+          }
         }
 
         &:not(:last-child) {
