@@ -1,7 +1,14 @@
 <template>
   <div id="app" class="bg-dark">
-    <h1 class='main-title'>tiresia</h1>
-    <RandomPicker/>
+    <div class="header-wrapper">
+    </div>
+    <main class="body-wrapper" role="main">
+      <h1 class='main-title'>tiresia</h1>
+      <RandomPicker/>
+    </main>
+    <div class="footer-wrapper">
+      <Footer/>
+    </div>
   </div>
 </template>
 
@@ -9,13 +16,15 @@
 import { Component, Vue } from 'vue-property-decorator'
 import './components/fontawesome/fontawesome'
 import RandomPicker from './components/RandomPicker.vue'
+import Footer from './components/Footer.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 
 @Component({
   components: {
-    RandomPicker
+    RandomPicker,
+    Footer
   }
 })
 export default class App extends Vue {}
@@ -27,7 +36,6 @@ export default class App extends Vue {}
 @import "~bootstrap/scss/print";
 @import "~bootstrap/scss/utilities";
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
 
 body {
   background: $dark;
@@ -38,11 +46,14 @@ body {
 }
 
 #app {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin: 60px auto auto;
+  margin: auto;
 
   .main-title {
     font-family: 'Montserrat', sans-serif;
@@ -58,5 +69,9 @@ body {
   }
 
   width: map-get($grid-breakpoints, lg);
+
+  .body-wrapper {
+    flex: 1;
+  }
 }
 </style>
