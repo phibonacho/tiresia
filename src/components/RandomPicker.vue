@@ -41,8 +41,6 @@
 
 <script>
 
-import '../styles/random_picker.scss'
-
 export default {
   name: 'RandomPicker',
   data () {
