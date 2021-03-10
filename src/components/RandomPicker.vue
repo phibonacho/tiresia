@@ -6,20 +6,20 @@
           <div class='info'>
             <font-awesome-icon icon='info-circle'/>
             Definisci l'intervallo da cui vuoi estrarre i valori, una volta terminati i valori potrai azzerare le
-            estrazioni cliccando sul tasto di reset o modificando i limit dell'intervallo.
+            estrazioni cliccando sul tasto di reset o modificando i limiti dell'intervallo.
           </div>
           <div class='custom-field'>
-            <input type='number' :class="min ? 'filled' : ''" v-model="min" @change="flushPicked" id='lower-bound'>
+            <input type='number' :class="(min ? ' filled' : '') + (this.errorMin ? ' text-secondary' : '')" v-model="min" @keyup="validateInput" id='lower-bound'>
             <label for='lower-bound' class='text-uppercase'>Minimo</label>
           </div>
           <div class='custom-field'>
-            <input type='number' :class="(max ? ' filled' : '') + (picked.length === parseInt(max) ? ' text-secondary' : '')" v-model="max" @change="flushPicked" id='upper-bound'>
+            <input type='number' :class="(max ? ' filled' : '') + (this.errorMax ? ' text-secondary' : '')" v-model="max" @keyup="validateInput" id='upper-bound'>
             <label for='upper-bound' class='text-uppercase'>Massimo</label>
           </div>
         </div>
       </div>
       <div class="button-container">
-        <button @click="pickRandom">Estrai</button>
+        <button @click="pickRandom" :disabled="!this.min || !this.max || this.errorMin || this.errorMax || this.limitReached">Estrai</button>
       </div>
     </form>
     <div class="ext-container" id="target-container">
@@ -48,7 +48,10 @@ export default {
       picked: [],
       min: null,
       max: null,
-      scrollPast: false
+      scrollPast: false,
+      errorMax: false,
+      errorMin: false,
+      limitReached: false
     }
   },
   created () {
@@ -60,16 +63,22 @@ export default {
   methods: {
     handleScroll () {
       const elem = document.querySelector('#target-container')
-      if (elem.getBoundingClientRect().top < -100) {
+      if (elem.getBoundingClientRect().top < 0) {
         this.scrollPast = true
       }
 
-      if (elem.getBoundingClientRect().top >= -100) {
+      if (elem.getBoundingClientRect().top >= 0) {
         this.scrollPast = false
       }
     },
     flushPicked () {
       this.picked = []
+      this.limitReached = false
+    },
+    validateInput () {
+      this.errorMax = !(this.max && parseInt(this.max) > (parseInt(this.min) || -Infinity))
+      this.errorMin = !(this.min && parseInt(this.min) < (parseInt(this.max) || Infinity))
+      this.flushPicked()
     },
     pickRandom (event) {
       event.preventDefault()
@@ -80,6 +89,7 @@ export default {
 
       const actualMax = parseInt(this.max) + 1
       if (this.picked.length === (actualMax - this.min)) {
+        this.limitReached = true
         return
       }
       let random
@@ -158,12 +168,15 @@ export default {
     top: 0;
     left: 0;
     z-index: 1050;
+    transition: all .2s ease;
+    animation: 1s slide-in;
 
     @include media-breakpoint-up(md) {
       left: 50%;
       transform: translateX(-50%);
     }
   }
+
   .input-container {
     @at-root.sticky#{&} {
       flex: 0 0 66.66667%;
@@ -208,8 +221,8 @@ export default {
           max-width: 35%;
           color: lighten($dark, 50);
           font-size: 1.2rem;
-          text-align: left;
           padding-top: .1rem;
+          text-align: right;
           transition: all .1s linear;
           @at-root.sticky#{&} {
             position: absolute;
@@ -283,12 +296,27 @@ export default {
       outline: none;
       border-radius: $border-radius;
 
+      &:disabled {
+        color: lighten($dark, 50);
+        background: lighten($primary, 10);
+      }
+
       @at-root.sticky#{&} {
         height: 100%;
         border-radius: 0 $border-radius $border-radius 0;
         border: 1px solid #1b214b;
       }
     }
+  }
+}
+
+@keyframes slide-in {
+  from {
+    top: -100%;
+  }
+
+  to {
+    top:0;
   }
 }
 
