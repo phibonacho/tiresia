@@ -38,6 +38,9 @@ export default class App extends Vue {}
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
 
 body {
+  @include media-breakpoint-up(xl) {
+    background: darken($dark, 2);
+  }
   background: $dark;
 }
 
@@ -54,7 +57,10 @@ body {
   text-align: center;
   color: #2c3e50;
   margin: auto;
-
+  background: $dark;
+  @include media-breakpoint-up(xl) {
+    padding: 1rem 2rem;
+  }
   .main-title {
     font-family: 'Montserrat', sans-serif;
     color: $primary;
@@ -68,7 +74,7 @@ body {
     width: 100%;
   }
 
-  width: map-get($grid-breakpoints, lg);
+  width: map-get($grid-breakpoints, sm);
 
   .body-wrapper {
     flex: 1;

@@ -4,9 +4,7 @@
       <div class="input-container">
         <div class='card'>
           <div class='info'>
-            <font-awesome-icon icon='info-circle'/>
-            Definisci l'intervallo da cui vuoi estrarre i valori, una volta terminati i valori potrai azzerare le
-            estrazioni cliccando sul tasto di reset o modificando i limiti dell'intervallo.
+            <font-awesome-icon icon='info-circle'/> Prova <span class="font-weight-bold">TIRESIA</span>, imposta <span class="font-weight-bold">massimo</span> e <span class="font-weight-bold">minimo</span> ed inizia ad estrarre numeri casuali!
           </div>
           <div class='custom-field'>
             <input type='number' :class="(min ? ' filled' : '') + (this.errorMin ? ' text-secondary' : '')" v-model="min" @keyup="validateInput" id='lower-bound'>
@@ -22,7 +20,7 @@
         <button @click="pickRandom" :disabled="!this.min || !this.max || this.errorMin || this.errorMax || this.limitReached">Estrai</button>
       </div>
     </form>
-    <div class="ext-container" id="target-container">
+    <div class="ext-container" :class="this.picked.length === 0 ? 'empty' : ''" id="target-container">
       <div class="slot" v-for="(item, i) in picked" :key="i">
         <div class="number-card">
           {{ item }}
@@ -110,6 +108,11 @@ export default {
 .random-picker {
 
   .ext-container {
+    &.empty {
+      border: solid 2px transparent;
+    }
+
+    transition: all .3s ease;
     border: dashed 2px lighten($dark, 50);
     padding: 1rem;
     margin: 2rem auto auto;
@@ -298,7 +301,7 @@ export default {
       border-radius: $border-radius;
 
       &:disabled {
-        color: lighten($dark, 50);
+        color: lighten($dark, 30);
         background: lighten($primary, 10);
       }
 
