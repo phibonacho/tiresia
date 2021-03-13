@@ -4,40 +4,50 @@
       <div class="input-container">
         <div class='card'>
           <div class='info'>
-            <font-awesome-icon icon='info-circle'/> Prova <span class="font-weight-bold">TIRESIA</span>, imposta <span class="font-weight-bold">massimo</span> e <span class="font-weight-bold">minimo</span> ed inizia ad estrarre numeri casuali!
+            <font-awesome-icon icon='info-circle'/>
+            Prova <span class="font-weight-bold">TIRESIA</span>, imposta <span class="font-weight-bold">massimo</span> e
+            <span class="font-weight-bold">minimo</span> ed inizia ad estrarre numeri casuali!
           </div>
           <div class='custom-field'>
-            <input type='number' :class="(min ? ' filled' : '') + (this.errorMin ? ' text-secondary' : '')" v-model="min" @keyup="validateInput" id='lower-bound'>
+            <input type='number' :class="(min ? ' filled' : '') + (this.errorMin ? ' text-secondary' : '')"
+                   v-model="min" @keyup="validateInput" id='lower-bound'>
             <label for='lower-bound' class='text-uppercase'>Minimo</label>
           </div>
           <div class='custom-field'>
-            <input type='number' :class="(max ? ' filled' : '') + (this.errorMax ? ' text-secondary' : '')" v-model="max" @keyup="validateInput" id='upper-bound'>
+            <input type='number' :class="(max ? ' filled' : '') + (this.errorMax ? ' text-secondary' : '')"
+                   v-model="max" @keyup="validateInput" id='upper-bound'>
             <label for='upper-bound' class='text-uppercase'>Massimo</label>
           </div>
         </div>
       </div>
       <div class="button-container">
-        <button @click="pickRandom" :disabled="!this.min || !this.max || this.errorMin || this.errorMax || this.limitReached">Estrai</button>
+        <button @click="pickRandom" :disabled="disablePicker">Estrai</button>
       </div>
     </form>
-    <div class="ext-container" :class="this.picked.length === 0 ? 'empty' : ''" id="target-container">
-      <div class="slot" v-for="(item, i) in picked" :key="i">
-        <div class="number-card">
-          {{ item }}
-        </div>
-      </div>
-      <div class="command-bar" :style="picked.length > 0 ? 'display: block' : 'display: none'">
-        <button class='btn btn-secondary text-dark text-uppercase px-4 py-2 float-right font-weight-bold'
-                @click="flushPicked"
-        >Reset
-        </button>
-
-      </div>
+    <div class="containers-area">
+      <number-container
+        v-for="(child, i) in children"
+        :position="i"
+        :picked="child.items"
+        :selected="i === currentChild"
+        :key="i"
+        @click="targetChild"
+        @delete-container="deleteChild"
+        @select-container="targetChild"/>
+    </div>
+    <div class="mx-auto mt-3">
+      <button class="add-container" @click="addChild">
+        <font-awesome-icon icon='plus'/>
+      </button>
     </div>
   </div>
 </template>
 
 <script>
+import Vue from 'vue'
+import NumberContainer from '@/components/NumberContainer'
+
+Vue.component('number-container', NumberContainer)
 
 export default {
   name: 'RandomPicker',
@@ -47,9 +57,31 @@ export default {
       min: null,
       max: null,
       scrollPast: false,
-      errorMax: false,
-      errorMin: false,
-      limitReached: false
+      children: [],
+      currentChild: null
+    }
+  },
+  computed: {
+    errorMax () {
+      return !(this.max && this.intMax > (this.intMin || -Infinity))
+    },
+    errorMin () {
+      return !(this.min && this.intMin < (this.intMax || Infinity))
+    },
+    intMax () {
+      return parseInt(this.max) + 1
+    },
+    intMin () {
+      return parseInt(this.min)
+    },
+    limitReached () {
+      return this.intMax - this.intMin <= this.currentContainer.items.length
+    },
+    disablePicker () {
+      return !this.intMin || !this.intMax || this.errorMin || this.errorMax || this.limitReached
+    },
+    currentContainer () {
+      return this.children[this.currentChild]
     }
   },
   created () {
@@ -59,23 +91,33 @@ export default {
     window.removeEventListener('scroll', this.handleScroll)
   },
   methods: {
+    addChild () {
+      this.currentChild = this.children.length
+      this.children.push({ items: [] })
+    },
+    targetChild (i) {
+      this.currentChild = i
+    },
+    deleteChild (i) {
+      if (this.currentChild >= i) {
+        this.currentChild = this.currentChild - 1
+      }
+      this.children.splice(i, 1)
+    },
     handleScroll () {
-      const elem = document.querySelector('#target-container')
-      if (elem.getBoundingClientRect().top < 0) {
+      const elem = document.querySelector('.containers-area')
+      if (elem.getBoundingClientRect().top < 100) {
         this.scrollPast = true
       }
 
-      if (elem.getBoundingClientRect().top >= 0) {
+      if (elem.getBoundingClientRect().top >= 100) {
         this.scrollPast = false
       }
     },
     flushPicked () {
-      this.picked = []
-      this.limitReached = false
+      this.currentContainer.items = []
     },
     validateInput () {
-      this.errorMax = !(this.max && parseInt(this.max) > (parseInt(this.min) || -Infinity))
-      this.errorMin = !(this.min && parseInt(this.min) < (parseInt(this.max) || Infinity))
       this.flushPicked()
     },
     pickRandom (event) {
@@ -85,16 +127,11 @@ export default {
         return
       }
 
-      const actualMax = parseInt(this.max) + 1
       let random
       do {
-        random = Math.floor((Math.random() * (actualMax - this.min))) + parseInt(this.min)
-      } while (this.picked.includes(random))
-      this.picked.push(random)
-
-      if (this.picked.length === (actualMax - this.min)) {
-        this.limitReached = true
-      }
+        random = Math.floor((Math.random() * (this.intMax - this.intMin))) + this.intMin
+      } while (this.currentContainer.items.includes(random))
+      this.currentContainer.items.push(random)
     }
   }
 }
@@ -105,65 +142,9 @@ export default {
 @import '~bootstrap/scss/card';
 @import '~bootstrap/scss/buttons';
 
-.random-picker {
-
-  .ext-container {
-    &.empty {
-      border: solid 2px transparent;
-    }
-
-    transition: all .3s ease;
-    border: dashed 2px lighten($dark, 50);
-    padding: 1rem;
-    margin: 2rem auto auto;
-    border-radius: $border-radius;
-    display: flex;
-    flex-wrap: wrap;
-
-    .slot {
-      @include media-breakpoint-up(md) {
-        flex: 0 0 25%;
-        max-width: 25%;
-      }
-
-      flex: 0 0 50%;
-      max-width: 50%;
-
-      flex-direction: column;
-      box-sizing: border-box;
-      transition: all .2s ease;
-      text-align: center;
-
-      .number-card {
-        color: $primary;
-        margin: .5rem;
-        border-radius: $border-radius;
-        text-align: center;
-        border: solid 1px lighten($dark, 10);
-        border-left: solid 3px $primary;
-        box-shadow: 1px 2px 1px rgba(0,0,0,0.1);
-        transition: all .2s ease;
-        padding: 1rem;
-        font-weight: bold;
-        font-size: 1.2rem;
-
-        &:hover {
-          box-shadow: 2px 8px 6px rgba(0,0,0,0.3);
-          transform: translateY(-5px);
-        }
-      }
-    }
-    .command-bar {
-      width: 100%;
-      &:not(:first-child) {
-        margin-top: 1rem;
-      }
-    }
-  }
-}
-
 .picker-form {
   background: $dark;
+
   &.sticky {
     display: flex;
     flex-wrap: wrap;
@@ -210,7 +191,7 @@ export default {
         display: flex;
         flex-direction: row-reverse;
         padding: 1rem 2rem;
-        background: lighten($dark, 2);
+        background: rgba(0, 0, 0, .025);
 
         @at-root.sticky#{&} {
           flex: 1 1 50%;
@@ -314,13 +295,24 @@ export default {
   }
 }
 
+.add-container {
+  background: $primary;
+  color: $dark;
+  width: 32px;
+  height: 32px;
+  padding: .4rem;
+  border-radius: 50%;
+  border: solid 2px $primary;
+  outline: none;
+}
+
 @keyframes slide-in {
   from {
     top: -100%;
   }
 
   to {
-    top:0;
+    top: 0;
   }
 }
 
