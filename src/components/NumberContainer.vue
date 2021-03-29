@@ -6,7 +6,7 @@
           {{ info }}
         </span>
         <div v-else class="pill error">
-           <font-awesome-icon class="mr-2" icon='exclamation'/> <span>definisci massimo e minino</span>
+           <font-awesome-icon class="mr-2" icon='exclamation'/> <span>definisci intervallo</span>
         </div>
       </div>
       <div class="container-name">
