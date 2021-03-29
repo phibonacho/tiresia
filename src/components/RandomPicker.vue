@@ -237,9 +237,9 @@ export default {
 
     .card {
       background: transparent;
-      border: none;
 
       @at-root.sticky#{&} {
+        border: none;
         flex-direction: row;
         margin-bottom: 0;
       }
