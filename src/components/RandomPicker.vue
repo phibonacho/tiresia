@@ -1,43 +1,58 @@
 <template>
   <div class="random-picker">
-    <form action='#' id="main-form" :class="'picker-form ' + (scrollPast ? 'sticky' : '')">
+    <form action='#' id="picker-form" :class="(children.length ? 'sticky' : '')">
+      <div class="target-name" v-if="currentContainer">
+        <span class="font-weight-bold">{{ currentContainer.name }} </span>
+        <small v-if="min && max">{{ currentContainer.items.length }}/{{ actualMax - intMin }}</small>
+      </div>
       <div class="input-container">
         <div class='card'>
           <div class='info'>
             <font-awesome-icon icon='info-circle'/>
-            Prova <span class="font-weight-bold">TIRESIA</span>, imposta <span class="font-weight-bold">massimo</span> e
+            Prova <span class="tiresia">TIRESIA</span>, imposta <span class="font-weight-bold">massimo</span> e
             <span class="font-weight-bold">minimo</span> ed inizia ad estrarre numeri casuali!
           </div>
           <div class='custom-field'>
             <input type='number' :class="(min ? ' filled' : '') + (this.errorMin ? ' text-secondary' : '')"
-                   v-model="min" @keyup="validateInput" id='lower-bound'>
+                   v-model="min"
+                   @keyup="handleInput"
+                   id='lower-bound'>
             <label for='lower-bound' class='text-uppercase'>Minimo</label>
           </div>
           <div class='custom-field'>
             <input type='number' :class="(max ? ' filled' : '') + (this.errorMax ? ' text-secondary' : '')"
-                   v-model="max" @keyup="validateInput" id='upper-bound'>
+                   v-model="max"
+                   @keyup="handleInput"
+                   id='upper-bound'>
             <label for='upper-bound' class='text-uppercase'>Massimo</label>
           </div>
         </div>
       </div>
       <div class="button-container">
-        <button @click="pickRandom" :disabled="disablePicker">Estrai</button>
+        <button v-if="children.length" @click="pickRandom" :disabled="disablePick">Estrai</button>
       </div>
     </form>
     <div class="containers-area">
       <number-container
         v-for="(child, i) in children"
+        :collapse="child.collapse"
         :position="i"
+        :name="child.name"
+        :max="child.max"
+        :min="child.min"
         :picked="child.items"
         :selected="i === currentChild"
         :key="i"
         @click="targetChild"
+        @prop-change="updateChild"
         @delete-container="deleteChild"
         @select-container="targetChild"/>
     </div>
     <div class="mx-auto mt-3">
-      <button class="add-container" @click="addChild">
-        <font-awesome-icon icon='plus'/>
+      <button id="add-container"
+              @click="addChild()"
+              v-if="children.length">
+        <font-awesome-icon icon='plus-circle'/>
       </button>
     </div>
   </div>
@@ -68,17 +83,23 @@ export default {
     errorMin () {
       return !(this.min && this.intMin < (this.intMax || Infinity))
     },
+    actualMax () {
+      return this.intMax + 1
+    },
     intMax () {
-      return parseInt(this.max) + 1
+      return parseInt(this.max)
     },
     intMin () {
       return parseInt(this.min)
     },
     limitReached () {
-      return this.intMax - this.intMin <= this.currentContainer.items.length
+      return this.actualMax - this.intMin <= (this.currentContainer?.items.length || 0)
     },
-    disablePicker () {
-      return !this.intMin || !this.intMax || this.errorMin || this.errorMax || this.limitReached
+    disablePick () {
+      return this.limitReached || !this.currentContainer || this.errorMax || this.errorMin
+    },
+    disableAddChild () {
+      return this.children.length <= 1
     },
     currentContainer () {
       return this.children[this.currentChild]
@@ -91,45 +112,78 @@ export default {
     window.removeEventListener('scroll', this.handleScroll)
   },
   methods: {
-    addChild () {
-      this.currentChild = this.children.length
-      this.children.push({ items: [] })
-    },
-    targetChild (i) {
-      this.currentChild = i
-    },
-    deleteChild (i) {
-      if (this.currentChild >= i) {
-        this.currentChild = this.currentChild - 1
-      }
-      this.children.splice(i, 1)
-    },
+    // scroll handler
     handleScroll () {
       const elem = document.querySelector('.containers-area')
-      if (elem.getBoundingClientRect().top < 100) {
+      if (elem.getBoundingClientRect().top < 0) {
         this.scrollPast = true
       }
 
-      if (elem.getBoundingClientRect().top >= 100) {
+      if (elem.getBoundingClientRect().top >= 0) {
         this.scrollPast = false
+      }
+    },
+    // container handlers
+    addChild (max = null, min = null) {
+      this.children.push({ items: [], max: max, min: min, name: `Nuovo contenitore (${this.children.length})`, collapsed: false })
+      this.targetChild(this.children.length - 1)
+    },
+    updateChild (i, data) {
+      const targetChild = this.children[i]
+      for (const key in data) {
+        targetChild[key] = data[key]
+      }
+    },
+    targetChild (i) {
+      this.currentChild = i
+      this.max = this.currentContainer.max
+      this.min = this.currentContainer.min
+    },
+    deleteChild (i) {
+      this.max = null
+      this.min = null
+      this.children.splice(i, 1)
+      if (i === this.currentChild && this.children.length > 0) {
+        if (i === 0) {
+          this.targetChild(i)
+        } else {
+          this.targetChild(i - 1)
+        }
+      } else if (i < this.currentChild && this.children.length > 0) {
+        this.targetChild(this.currentChild - 1)
+      } else if (!this.children.length) {
+        this.currentChild = null
       }
     },
     flushPicked () {
       this.currentContainer.items = []
     },
-    validateInput () {
-      this.flushPicked()
+    // picker handler
+    handleInput () {
+      if (this.currentContainer) {
+        const { min, max } = this.currentContainer
+        if (this.intMax < max || this.intMin > min) {
+          this.flushPicked()
+        }
+
+        if (!this.errorMax) {
+          this.currentContainer.max = this.max
+        }
+        if (!this.errorMin) {
+          this.currentContainer.min = this.min
+        }
+      } else if (this.max && this.min) {
+        this.addChild(this.max, this.min)
+      }
     },
     pickRandom (event) {
       event.preventDefault()
 
-      if (!this.max || !this.min) {
-        return
-      }
+      const { intMin, actualMax } = this
 
       let random
       do {
-        random = Math.floor((Math.random() * (this.intMax - this.intMin))) + this.intMin
+        random = Math.floor((Math.random() * (actualMax - intMin))) + intMin
       } while (this.currentContainer.items.includes(random))
       this.currentContainer.items.push(random)
     }
@@ -142,10 +196,13 @@ export default {
 @import '~bootstrap/scss/card';
 @import '~bootstrap/scss/buttons';
 
-.picker-form {
+#picker-form {
   background: $dark;
 
   &.sticky {
+    border: solid 1px rgba(0, 0, 0, 0.125);
+    border-radius: .5rem;
+    overflow: hidden;
     display: flex;
     flex-wrap: wrap;
     position: fixed;
@@ -161,7 +218,18 @@ export default {
     }
   }
 
+  .target-name {
+    flex: 3 3 100%;
+    text-align: left;
+    color: $text-muted;
+    text-transform: uppercase;
+    padding: .5rem;
+    background: rgba(0, 0, 0, .025);
+    border-bottom: solid 2px rgba(0, 0, 0, .125);
+  }
+
   .input-container {
+
     @at-root.sticky#{&} {
       flex: 0 0 66.66667%;
       max-width: 66.66667%;
@@ -169,7 +237,7 @@ export default {
 
     .card {
       background: transparent;
-      margin-bottom: 1rem;
+      border: none;
 
       @at-root.sticky#{&} {
         flex-direction: row;
@@ -295,15 +363,25 @@ export default {
   }
 }
 
-.add-container {
-  background: $primary;
-  color: $dark;
-  width: 32px;
-  height: 32px;
-  padding: .4rem;
-  border-radius: 50%;
-  border: solid 2px $primary;
+.containers-area {
+  margin-top: 100px;
+}
+
+.tiresia {
+  font-family: 'Montserrat', sans-serif;
+  color: $primary;
+  text-shadow: $secondary 1px 1px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+#add-container {
+  background: transparent;
+  color: $primary;
+  font-size: 2rem;
+  border: transparent;
   outline: none;
+  animation: .7s ease zoom-spin;
 }
 
 @keyframes slide-in {
@@ -313,6 +391,28 @@ export default {
 
   to {
     top: 0;
+  }
+}
+
+.random-picker {
+  width: 100%;
+}
+
+@keyframes zoom-spin {
+  0% {
+    transform: scale(0) rotate(135deg);
+  }
+
+  50% {
+    transform: scale(1.2) rotate(-90deg);
+  }
+
+  80% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }
 

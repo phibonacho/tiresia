@@ -1,11 +1,11 @@
 <template>
   <footer class="footer">
     <div class="content">
-      <span>Made with
+      <p>(v{{ version }}) Made with
         <font-awesome-icon class="text-secondary" icon='heart'/>
         by
         <a href="https://github.com/rollingflamingo">rollingflamingo</a>
-      </span>
+      </p>
     </div>
   </footer>
 </template>
@@ -13,10 +13,15 @@
 <script>
 
 export default {
-  name: 'Footer'
+  name: 'Footer',
+  computed: {
+    version () {
+      return process.env.PACKAGE_VERSION
+    }
+  }
 }
-</script>
 
+</script>
 <style scoped lang="scss">
 @import '../styles/variables';
 

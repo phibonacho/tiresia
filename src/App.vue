@@ -3,7 +3,6 @@
     <div class="header-wrapper">
     </div>
     <main class="body-wrapper" role="main">
-      <h1 class='main-title'>tiresia</h1>
       <RandomPicker/>
     </main>
     <div class="footer-wrapper">
@@ -61,14 +60,6 @@ body {
   @include media-breakpoint-up(xl) {
     padding: 1rem 2rem;
   }
-  .main-title {
-    font-family: 'Montserrat', sans-serif;
-    color: $primary;
-    text-shadow: $secondary 3px 2px;
-    text-transform: uppercase;
-    font-size: 3rem;
-    position: relative;
-  }
 
   @include media-breakpoint-down(lg) {
     width: 100%;
@@ -76,7 +67,10 @@ body {
 
   width: map-get($grid-breakpoints, sm);
 
-  .body-wrapper {
+  .body-wrapper {;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex: 1;
   }
 }
