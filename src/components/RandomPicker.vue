@@ -2,7 +2,12 @@
   <div class="random-picker">
     <form action='#' id="picker-form" :class="(children.length ? 'sticky' : '')">
       <div class="target-name" v-if="currentContainer">
-        <span class="font-weight-bold">{{ currentContainer.name }} </span>
+        <input type="text"
+               :id="`container-name`"
+               v-model="currentContainer.name"
+               maxlength="25"
+               @focus="$event.target.select()">
+        <label :for="`container-name`" class="sr-only">Container name</label>
         <small v-if="min && max">{{ currentContainer.items.length }}/{{ actualMax - intMin }}</small>
       </div>
       <div class="input-container">
@@ -106,10 +111,10 @@ export default {
     }
   },
   created () {
-    window.addEventListener('scroll', this.handleScroll, { passive: true })
+    // window.addEventListener('scroll', this.handleScroll, { passive: true })
   },
   destroyed () {
-    window.removeEventListener('scroll', this.handleScroll)
+    // window.removeEventListener('scroll', this.handleScroll)
   },
   methods: {
     // scroll handler
@@ -198,6 +203,13 @@ export default {
 
 #picker-form {
   background: $dark;
+  transition: all ease .2s;
+
+  @include media-breakpoint-down(md) {
+    &:focus-within:not(.sticky) {
+      margin-bottom: calc(100vh * .2);
+    }
+  }
 
   &.sticky {
     border: solid 1px rgba(0, 0, 0, 0.125);
@@ -222,10 +234,20 @@ export default {
     flex: 3 3 100%;
     text-align: left;
     color: $text-muted;
-    text-transform: uppercase;
     padding: .5rem;
     background: rgba(0, 0, 0, .025);
     border-bottom: solid 2px rgba(0, 0, 0, .125);
+    input {
+      text-transform: uppercase;
+      background: transparent;
+      color: $text-muted;
+      font-weight: bold;
+      border: none;
+      font-size: .8rem;
+      outline: none;
+      padding: .2rem 0;
+      text-align: left;
+    }
   }
 
   .input-container {

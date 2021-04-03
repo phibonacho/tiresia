@@ -10,13 +10,7 @@
         </div>
       </div>
       <div class="container-name">
-          <input type="text"
-                 :id="`${id}-name`"
-                 :value="name"
-                 maxlength="25"
-                 @change="handleNameChange"
-                 @focus="$event.target.select()">
-        <label :for="`${id}-name`" class="sr-only">Container name</label>
+        <span>{{ name }}</span>
       </div>
       <div class="container-controls">
         <button class='remove-container'
@@ -53,9 +47,6 @@ export default {
     selected: Boolean,
     collapse: Boolean
   },
-  created () {
-    this.flushing = false
-  },
   computed: {
     id () {
       return `container-${this.position}-${this.min}-${this.max}`
@@ -71,13 +62,6 @@ export default {
     }
   },
   methods: {
-    handleNameChange (event) {
-      this.$emit('prop-change', this.position, { name: event.target.value })
-    },
-    handleCollapseChange () {
-      this.collapse = !this.collapse
-      this.$emit('prop-change', this.position, { collapsed: !this.collapse })
-    },
     emitFLush (event) {
       event.stopPropagation()
       this.$emit('delete-container', this.position)
@@ -146,16 +130,7 @@ $selection-color: $secondary;
       &-name {
         flex: 1 1 50%;
         max-width: 50%;
-        input {
-          background: transparent;
-          color: $text-muted;
-          border: none;
-          font-size: .8rem;
-          outline: none;
-          padding: .2rem 0;
-          text-align: center;
-          width: 100%;
-        }
+        color: $text-muted;
       }
 
       &-controls {
